@@ -1,0 +1,28 @@
+FROM python:3.6-buster
+
+# set pip environment variables
+ENV AZURE_INDEX_URL pkgs.dev.azure.com/IngEurCDaaS01/_packaging/P02380-outgoing-public%40Local/pypi/simple/
+ENV PIP_TRUSTED_HOST pkgs.dev.azure.com
+
+# HOW DO I PASS SECRETS?
+# to pass secret information (e.g. azure access token)
+# we can use the docker build --secret option, e.g.
+# docker build --secret id=azure_token,src=azure_token.txt .
+# per default secrets are temporarily stored in /run/secrets/
+# NOTE that the secret is not part of the final  
+
+# HOW DO I ACCESS THE SECRETS?
+# to access the secret in the Dockerfile we can use
+# RUN commands with the --mount=type=secret option
+
+# for more info check out the docker docs
+# https://docs.docker.com/develop/develop-images/build_enhancements/
+
+# EXAMPLE USAGE
+# installing the kratos package from azure with personal access token
+RUN --mount=type=secret,id=azure_token \
+    pip3 install \
+    --index-url=https://$(cat /run/secrets/azure_token)@${AZURE_INDEX_URL} \
+    --trusted-host=${PIP_TRUSTED_HOST} \
+    --no-deps \
+    kratos==1.1.8
